@@ -1,0 +1,18 @@
+stages:
+   - build
+
+docker-build:
+   image: carlonluca/docker-multiarch:dev
+   stage: build
+   services:
+      - docker:dind
+   before_script:
+      - docker login -u "$CI_DOCKER_HUB_USER" -p "$CI_DOCKER_HUB_PASSWORD" docker.io
+   script:
+      - export DOCKER_CLI_EXPERIMENTAL=enabled
+      - docker buildx create --use --name multiarch_builder
+      - docker buildx build --push --platform linux/arm64/v8,linux/amd64 -t carlonluca/docker-multiarch:$VERSION .
+      - docker stop multiarch_builder
+      - docker rm multiarch_builder
+   rules:
+      - when: manual
