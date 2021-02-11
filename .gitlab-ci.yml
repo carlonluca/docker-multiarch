@@ -2,7 +2,7 @@ stages:
    - build
 
 docker-build:
-   image: carlonluca/docker-multiarch:dev
+   image: carlonluca/docker-multiarch:dev-groovy
    stage: build
    services:
       - docker:dind
