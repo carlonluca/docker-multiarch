@@ -18,5 +18,5 @@ RUN \
       CURR_ARCH="amd64"; \
    else exit 1; fi && \
    BUILDX_URL=$(curl https://api.github.com/repos/docker/buildx/releases/latest | jq -r .assets[].browser_download_url | grep $CURR_ARCH | grep linux) && \
-   curl "$BUILDX_URL" -o ~/.docker/cli-plugins/docker-buildx
+   curl -L "$BUILDX_URL" -o ~/.docker/cli-plugins/docker-buildx
 RUN chmod +x /root/.docker/cli-plugins/docker-buildx
