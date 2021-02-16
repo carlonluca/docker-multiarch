@@ -1,4 +1,4 @@
-FROM ubuntu:groovy
+FROM ubuntu:bionic
 
 RUN apt-get update
 RUN apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
