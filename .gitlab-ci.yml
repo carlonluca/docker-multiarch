@@ -2,7 +2,7 @@ stages:
    - build
 
 docker-build:
-   image: carlonluca/docker-multiarch:dev-groovy
+   image: carlonluca/docker-multiarch:latest
    stage: build
    services:
       - docker:dind
@@ -10,15 +10,18 @@ docker-build:
       - docker login -u "$CI_DOCKER_HUB_USER" -p "$CI_DOCKER_HUB_PASSWORD" docker.io
    script:
       - export DOCKER_CLI_EXPERIMENTAL=enabled
-      - export VERSION=$(cat RELEASE)
+      - export VERSION=$(cat VERSION)
       - docker run --privileged --rm tonistiigi/binfmt --install all
       - docker buildx create --use --name builder_multiarch --platform linux/arm64/v8,linux/386,linux/arm/v7,linux/arm/v6,linux/amd64
       - docker buildx build --push --platform linux/arm64/v8 -t carlonluca/docker-multiarch:dev-armv8 -f Dockerfile_groovy .
       - docker buildx build --push --platform linux/amd64 -t carlonluca/docker-multiarch:dev-amd64 -f Dockerfile_groovy .
-      - docker manifest create carlonluca/darkmediawiki:$VERSION --amend carlonluca/darkmediawiki:dev-armv8 --amend carlonluca/darkmediawiki:dev-amd64
-      - docker manifest create carlonluca/darkmediawiki:latest --amend carlonluca/darkmediawiki:dev-armv8 --amend carlonluca/darkmediawiki:dev-amd64
-      - docker manifest push carlonluca/darkmediawiki:$VERSION
-      - docker manifest push carlonluca/darkmediawiki:latest
+      - docker manifest create carlonluca/docker-multiarch:$VERSION --amend carlonluca/docker-multiarch:dev-armv8 --amend carlonluca/docker-multiarch:dev-amd64
+      - docker manifest create carlonluca/docker-multiarch:latest --amend carlonluca/docker-multiarch:dev-armv8 --amend carlonluca/docker-multiarch:dev-amd64
+      - docker manifest push carlonluca/docker-multiarch:$VERSION
+      - docker manifest push carlonluca/docker-multiarch:latest
+      # Build for older arm versions.
+      - docker buildx build --push --platform linux/arm/v7 -t carlonluca/docker-multiarch:$VERSION-armv7 -t carlonluca/docker-multiarch:latest-armv7 -f Dockerfile .
+      # Cleanup.
       - docker stop builder_multiarch
       - docker rm builder_multiarch
    rules:
