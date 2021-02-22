@@ -10,9 +10,16 @@ docker-build:
       - docker login -u "$CI_DOCKER_HUB_USER" -p "$CI_DOCKER_HUB_PASSWORD" docker.io
    script:
       - export DOCKER_CLI_EXPERIMENTAL=enabled
-      - docker buildx create --use --name multiarch_builder
-      - docker buildx build --push --platform linux/arm64/v8,linux/amd64 -t carlonluca/docker-multiarch:$VERSION .
-      - docker stop multiarch_builder
-      - docker rm multiarch_builder
+      - export VERSION=$(cat RELEASE)
+      - docker run --privileged --rm tonistiigi/binfmt --install all
+      - docker buildx create --use --name builder_multiarch --platform linux/arm64/v8,linux/386,linux/arm/v7,linux/arm/v6,linux/amd64
+      - docker buildx build --push --platform linux/arm64/v8 -t carlonluca/docker-multiarch:dev-armv8 -f Dockerfile_groovy .
+      - docker buildx build --push --platform linux/amd64 -t carlonluca/docker-multiarch:dev-amd64 -f Dockerfile_groovy .
+      - docker manifest create carlonluca/darkmediawiki:$VERSION --amend carlonluca/darkmediawiki:dev-armv8 --amend carlonluca/darkmediawiki:dev-amd64
+      - docker manifest create carlonluca/darkmediawiki:latest --amend carlonluca/darkmediawiki:dev-armv8 --amend carlonluca/darkmediawiki:dev-amd64
+      - docker manifest push carlonluca/darkmediawiki:$VERSION
+      - docker manifest push carlonluca/darkmediawiki:latest
+      - docker stop builder_multiarch
+      - docker rm builder_multiarch
    rules:
       - when: manual
