@@ -22,7 +22,7 @@ docker-build:
       # Build for older arm versions.
       - docker buildx build --push --platform linux/arm/v7 -t carlonluca/docker-multiarch:$VERSION-armv7 -t carlonluca/docker-multiarch:latest-armv7 -f Dockerfile .
       # Cleanup.
-      - docker stop builder_multiarch
-      - docker rm builder_multiarch
+      - docker buildx stop builder_multiarch
+      - docker buildx rm builder_multiarch
    rules:
       - when: manual
